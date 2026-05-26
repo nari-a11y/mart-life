@@ -1,0 +1,6 @@
+{
+  "name": "슬기로운 마트 생활",
+  "description": "중학생 특수학급 학생들을 위한 금전 관리 시뮬레이션 게임입니다. 예산 안에서 물건을 사고 남은 돈을 관리하는 법을 배웁니다.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
