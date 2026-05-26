@@ -28,6 +28,7 @@ type Product = {
   emoji: string;
   imageUrl?: string;
   category: 'drink' | 'snack' | 'etc' | 'personal';
+  shareType?: 'together' | 'alone';
 };
 
 type ScreenType = 'INTRO' | 'MISSION_SHOPPING' | 'BALANCE_CHECK' | 'MY_CHOICE' | 'HIDDEN_STAGE' | 'BUDGET_OVER' | 'RESULT';
@@ -60,10 +61,10 @@ const ITEMS: Product[] = [
 ];
 
 const MY_CHOICE_ITEMS: Product[] = [
-  { id: 'my1', name: '아이스크림', price: 5000, emoji: '🍦', imageUrl: '/images/products/아이스크림.png', category: 'personal' },
-  { id: 'my2', name: '초코바', price: 2500, emoji: '🍫', imageUrl: '/images/products/초코바.png', category: 'personal' },
-  { id: 'my3', name: '팝콘', price: 4500, emoji: '🍿', imageUrl: '/images/products/팝콘.png', category: 'personal' },
-  { id: 'my4', name: '젤리', price: 2000, emoji: '🧸', imageUrl: '/images/products/젤리.png', category: 'personal' },
+  { id: 'my1', name: '아이스크림', price: 5000, emoji: '🍦', imageUrl: '/images/products/아이스크림.png', category: 'personal', shareType: 'together' },
+  { id: 'my2', name: '초코바',    price: 2500, emoji: '🍫', imageUrl: '/images/products/초코바.png',    category: 'personal', shareType: 'alone'   },
+  { id: 'my3', name: '팝콘',     price: 4000, emoji: '🍿', imageUrl: '/images/products/팝콘.png',     category: 'personal', shareType: 'together' },
+  { id: 'my4', name: '젤리',     price: 2000, emoji: '🧸', imageUrl: '/images/products/젤리.png',     category: 'personal', shareType: 'alone'   },
 ];
 
 const SPECIAL_OFFER: Product = {
@@ -336,7 +337,7 @@ export default function App() {
                                   !filled
                                     ? 'bg-gray-50 border-dashed border-gray-200 opacity-40'
                                     : isExtra
-                                    ? 'bg-orange-50 border-orange-300'
+                                    ? 'bg-red-50 border-red-300'
                                     : 'bg-orange-50 border-orange-200'
                                 }`}
                               >
@@ -368,7 +369,7 @@ export default function App() {
                       {cart.map((item, idx) => {
                         if (item.category === 'drink') return null;
                         return (
-                          <div key={`etc-${idx}`} className="flex items-center gap-3 p-3 rounded-2xl bg-orange-50 border-2 border-orange-200">
+                          <div key={`etc-${idx}`} className="flex items-center gap-3 p-3 rounded-2xl bg-red-50 border-2 border-red-300">
                             <ProductImage item={item} className="w-12 h-12 flex-shrink-0" />
                             <div className="flex-1">
                               <div className="font-bold text-lg text-gray-800">{item.name}</div>
@@ -388,31 +389,37 @@ export default function App() {
                     </div>
                   </div>
 
-                  <motion.button
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    disabled={cart.length === 0}
-                    onClick={() => {
-                      if (missionStatus.isComplete) {
-                        setScreen('BALANCE_CHECK');
-                      } else if (!confirmCheckout) {
-                        setConfirmCheckout(true);
-                      } else {
-                        setConfirmCheckout(false);
-                        setResultType('FAILED_MISSION');
-                        setScreen('RESULT');
-                      }
-                    }}
-                    className={`w-full py-6 rounded-3xl text-2xl font-black flex items-center justify-center gap-3 transition-all duration-200 ${
-                      cart.length === 0
-                        ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
-                        : confirmCheckout
-                        ? 'bg-orange-500 text-white shadow-lg shadow-orange-200'
-                        : 'bg-orange-400 text-white shadow-lg shadow-orange-200'
-                    }`}
-                  >
-                    {confirmCheckout ? '정말 다 골랐나요? 한 번 더 눌러요 👆' : '다 골랐어요. 계산할래요'} <ArrowRight />
-                  </motion.button>
+                  {(() => {
+                    const canCheckout = missionStatus.drink === MISSION_TARGETS.drink && cart.length === MISSION_TARGETS.drink;
+                    return (
+                      <motion.button
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        disabled={!canCheckout}
+                        onClick={() => {
+                          if (!canCheckout) return;
+                          if (missionStatus.isComplete) {
+                            setScreen('BALANCE_CHECK');
+                          } else if (!confirmCheckout) {
+                            setConfirmCheckout(true);
+                          } else {
+                            setConfirmCheckout(false);
+                            setResultType('FAILED_MISSION');
+                            setScreen('RESULT');
+                          }
+                        }}
+                        className={`w-full py-6 rounded-3xl text-2xl font-black flex items-center justify-center gap-3 transition-all duration-200 ${
+                          !canCheckout
+                            ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                            : confirmCheckout
+                            ? 'bg-orange-500 text-white shadow-lg shadow-orange-200'
+                            : 'bg-orange-400 text-white shadow-lg shadow-orange-200'
+                        }`}
+                      >
+                        {confirmCheckout ? '정말 다 골랐나요? 한 번 더 눌러요 👆' : '다 골랐어요. 계산할래요'} <ArrowRight />
+                      </motion.button>
+                    );
+                  })()}
                 </div>
 
                 {/* 선반 (모바일: 하단 / 태블릿: 좌측) */}
@@ -523,29 +530,59 @@ export default function App() {
 
                 {/* 장바구니 요약 + 잔액 (모바일: 상단 / 태블릿: 우측 고정) */}
                 <div className="order-1 md:order-2 md:w-[280px] md:sticky md:top-[88px] md:flex-shrink-0 space-y-4">
-                  <div className="bg-white rounded-3xl p-5 shadow-sm border-4 border-green-100">
-                    <h3 className="text-base font-black text-green-700 mb-3 flex items-center gap-2">
-                      <CheckCircle2 className="w-5 h-5" /> 미션 완료!
+                  <div className={`bg-white rounded-3xl p-5 shadow-sm border-4 transition-colors duration-300 ${balance < 0 ? 'border-red-200' : 'border-green-100'}`}>
+                    <h3 className={`text-base font-black mb-3 flex items-center gap-2 ${balance < 0 ? 'text-red-500' : 'text-green-700'}`}>
+                      <CheckCircle2 className="w-5 h-5" /> {balance < 0 ? '돈이 부족해요! 💸' : '미션 완료!'}
                     </h3>
                     <div className="space-y-2">
                       {cart.map((item, i) => (
-                        <div key={i} className="flex items-center gap-2 p-2 rounded-xl bg-green-50">
+                        <div key={i} className={`flex items-center gap-2 p-2 rounded-xl ${balance < 0 ? 'bg-red-50' : 'bg-green-50'}`}>
                           <ProductImage item={item} className="w-8 h-8 flex-shrink-0" />
                           <span className="font-bold text-sm flex-1">{item.name}</span>
-                          <span className="text-sm font-bold text-green-700">{item.price.toLocaleString()}원</span>
+                          <span className={`text-sm font-bold ${balance < 0 ? 'text-red-600' : 'text-green-700'}`}>{item.price.toLocaleString()}원</span>
+                          {balance < 0 && (
+                            <motion.button
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => removeFromCart(i)}
+                              className="bg-red-100 text-red-500 px-3 py-2 rounded-xl font-black text-sm border-2 border-red-200 flex-shrink-0"
+                            >
+                              빼기
+                            </motion.button>
+                          )}
                         </div>
                       ))}
                     </div>
                   </div>
 
-                  <div className="bg-white rounded-3xl p-5 shadow-sm border-4 border-orange-100">
+                  <div className={`bg-white rounded-3xl p-5 shadow-sm border-4 transition-colors duration-300 ${balance < 0 ? 'border-red-200' : 'border-orange-100'}`}>
                     <div className="flex items-center gap-2 mb-1">
-                      <Wallet className="w-5 h-5 text-orange-500" />
+                      <Wallet className={`w-5 h-5 ${balance < 0 ? 'text-red-500' : 'text-orange-500'}`} />
                       <span className="text-sm font-bold text-gray-500">남은 돈</span>
                     </div>
-                    <div className="text-3xl font-black text-orange-600">{balance.toLocaleString()}원</div>
-                    <p className="text-base font-black text-orange-500 mt-2">뭐 먹고싶어요? 🍬</p>
+                    <div className={`text-3xl font-black ${balance < 0 ? 'text-red-500' : 'text-orange-600'}`}>{balance.toLocaleString()}원</div>
+                    <p className={`text-base font-black mt-2 ${balance < 0 ? 'text-red-400' : 'text-orange-500'}`}>
+                      {balance < 0 ? '음료수를 빼거나 다른 간식을 골라요' : '뭐 먹고싶어요? 🍬'}
+                    </p>
                   </div>
+
+                  <AnimatePresence>
+                    {myItems.length > 0 && balance >= 0 && (
+                      <motion.button
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 10 }}
+                        whileTap={{ scale: 0.97 }}
+                        onClick={() => {
+                          const drinkCount = cart.filter(i => i.category === 'drink').length;
+                          setResultType(drinkCount >= MISSION_TARGETS.drink ? 'PERFECT' : 'FAILED_MISSION');
+                          setScreen('RESULT');
+                        }}
+                        className="w-full py-5 rounded-3xl text-xl font-black bg-orange-400 text-white shadow-lg shadow-orange-200 flex items-center justify-center gap-2"
+                      >
+                        다 골랐어요 <ArrowRight />
+                      </motion.button>
+                    )}
+                  </AnimatePresence>
                 </div>
 
                 {/* 제품 그리드 (모바일: 하단 / 태블릿: 좌측) */}
@@ -571,7 +608,10 @@ export default function App() {
                         <motion.button
                           key={item.id}
                           whileTap={{ scale: 0.95 }}
-                          onClick={() => { if (!hasSelection) addToMyItems(item); }}
+                          onClick={() => {
+                            if (isSelected) setMyItems([]);
+                            else setMyItems([item]);
+                          }}
                           className={`bg-white p-5 rounded-[2rem] shadow-lg border-4 text-center flex flex-col items-center transition-all duration-300 ${
                             isSelected
                               ? 'border-orange-400 ring-4 ring-orange-200 scale-105'
@@ -580,7 +620,16 @@ export default function App() {
                               : 'border-transparent hover:border-orange-400'
                           }`}
                         >
-                          <ProductImage item={item} className="w-full aspect-square mb-3" />
+                          <ProductImage item={item} className="w-full aspect-square mb-2" />
+                          {item.shareType && (
+                            <span className={`text-base font-black px-4 py-2 rounded-2xl w-full text-center mb-2 ${
+                              item.shareType === 'together'
+                                ? 'bg-orange-100 text-orange-600'
+                                : 'bg-blue-100 text-blue-600'
+                            }`}>
+                              {item.shareType === 'together' ? '🤝 같이 먹을 수 있어요' : '🧍 혼자만 먹을 수 있어요'}
+                            </span>
+                          )}
                           <div className="font-black text-xl mb-1">{item.name}</div>
                           <div className="text-orange-500 font-black text-lg">{item.price.toLocaleString()}원</div>
                         </motion.button>
@@ -688,146 +737,101 @@ export default function App() {
         )}
 
         {/* --- SCREEN 6: RESULT --- */}
-        {screen === 'RESULT' && (
-          <motion.div
-            key="result"
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="p-6 max-w-[1024px] mx-auto min-h-screen flex flex-col items-center text-center gap-6 pb-20"
-          >
-            {/* Header */}
-            <div className="space-y-3 pt-4">
-              <div className="flex justify-center">
-                <div className="flex items-center gap-2 bg-white/80 border-2 border-amber-200 px-4 py-2 rounded-full">
-                  <span className="text-xl">🏫</span>
-                  <span className="font-black text-amber-700">교실</span>
-                </div>
-              </div>
-              <div className="text-8xl">
-                {resultType === 'PERFECT' ? '🎉' : resultType === 'FAILED_MISSION' ? '😢' : '👍'}
-              </div>
-              <h1 className={`text-5xl font-black ${
-                resultType === 'PERFECT' ? 'text-orange-500' :
-                resultType === 'FAILED_MISSION' ? 'text-red-500' :
-                'text-green-600'
-              }`}>
-                {resultType === 'PERFECT' ? '미션 완료!' :
-                 resultType === 'FAILED_MISSION' ? '조금 아쉬워요' :
-                 '성공!'}
-              </h1>
-            </div>
+        {screen === 'RESULT' && (() => {
+          const drinkCount = cart.filter(i => i.category === 'drink').length;
+          const personalItem = myItems.find(i => i.category === 'personal');
 
-            {/* Sections: 태블릿에서 나란히 */}
-            <div className="w-full flex flex-col md:flex-row gap-6 items-start">
-            {/* Section 1: 내가 산 것 */}
-            <div className="flex-1 bg-white rounded-3xl p-6 shadow-md border-4 border-gray-100 text-left">
-              <h3 className="text-xl font-black mb-4 text-gray-700">📋 내가 산 것</h3>
+          // 음료수 배분: 나 → 친구 → 선생님 순 우선
+          const myHasDrink    = drinkCount >= 1;
+          const friendHasDrink = drinkCount >= 2;
+          const teacherHasDrink = drinkCount >= 3;
 
-              <div className="space-y-3 mb-4">
-                <p className="text-sm font-bold text-orange-500">선생님 부탁</p>
-                {([
-                  { category: 'drink', item: ITEMS[0], name: '음료수', target: MISSION_TARGETS.drink },
-                ] as const).map(({ category, item: missionItem, name, target }) => {
-                  const count = cart.filter(i => i.category === category).length;
-                  const ok = count >= target;
-                  return (
-                    <div key={category} className={`flex items-center gap-3 p-3 rounded-2xl ${ok ? 'bg-green-50' : 'bg-red-50'}`}>
-                      <ProductImage item={missionItem} className="w-10 h-10 flex-shrink-0" />
-                      <span className="font-bold text-lg flex-1">{name}</span>
-                      <span className={`font-black text-xl ${ok ? 'text-green-600' : 'text-red-500'}`}>
-                        {count}/{target} {ok ? '✅' : '❌'}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
+          const config = resultType === 'PERFECT' ? {
+            bg: 'bg-yellow-50',
+            sceneBg: 'from-yellow-100 to-orange-100',
+            title: personalItem?.shareType === 'alone' ? '조금 아쉬웠어요' : '너무 즐거웠어요! 🎉',
+            titleColor: personalItem?.shareType === 'alone' ? 'text-amber-600' : 'text-orange-500',
+            desc: personalItem?.id === 'my3'
+              ? '음료수와 팝콘을 함께 같이 먹을 수 있어서 선생님과 친구가 좋아했어요!'
+              : personalItem?.id === 'my2'
+              ? '음료수는 맞게 나눠 먹었지만 초코바는 나 혼자 먹어서 친구가 서운해했어요.'
+              : personalItem?.id === 'my4'
+              ? '음료수는 맞게 나눠 먹었지만 젤리는 나 혼자 먹어서 친구가 서운해했어요.'
+              : `선생님이 부탁한 음료수도 1캔씩 마시고, ${personalItem?.name ?? '간식'}도 나눠먹어서 너무 즐거웠어요!`,
+          } : resultType === 'MISSION_COMPLETE' ? {
+            bg: 'bg-amber-50',
+            sceneBg: 'from-amber-100 to-yellow-100',
+            title: '조금 아쉬웠어요',
+            titleColor: 'text-amber-600',
+            desc: '음료수를 1캔씩 나눠 마셨지만, 간식이 없어서 조금 아쉬웠어요.',
+          } : {
+            bg: 'bg-sky-50',
+            sceneBg: 'from-sky-100 to-blue-100',
+            title: '속상했어요 ㅠㅠ',
+            titleColor: 'text-blue-600',
+            desc: drinkCount === 2
+              ? '선생님이 음료수를 마시지 못해서 속상해했어요 ㅠㅠ'
+              : drinkCount <= 1
+              ? '선생님과 친구가 음료수를 마시지 못해서 속상해했어요 ㅠㅠ'
+              : '아무도 음료수를 마시지 못해서 많이 속상했어요 ㅠㅠ',
+          };
 
-              <div className="pt-3 border-t-2 border-dashed border-gray-200">
-                <p className="text-sm font-bold text-orange-500 mb-3">내가 고른 것</p>
-                {myItems.length > 0 ? (
-                  <div className="space-y-2">
-                    {myItems.map((item, i) => (
-                      <div key={i} className="flex items-center gap-3 p-3 rounded-2xl bg-orange-50">
-                        <ProductImage item={item} className="w-10 h-10 flex-shrink-0" />
-                        <span className="font-bold text-lg flex-1">{item.name}</span>
-                        <span className="font-black text-xl text-green-600">✅</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-gray-400 font-bold text-lg">없음</p>
-                )}
-              </div>
-            </div>
+          const characters = [
+            { emoji: '👨‍🏫', name: '선생님', hasDrink: teacherHasDrink, snack: null as Product | null | undefined },
+            { emoji: '🧑',   name: '친구',   hasDrink: friendHasDrink,  snack: null },
+            { emoji: '😊',   name: '나',     hasDrink: myHasDrink,      snack: personalItem },
+          ];
 
-            {/* Section 2: 오늘은 어떻게 됐을까? */}
-            <div className="flex-1 bg-white rounded-3xl p-6 shadow-md border-4 border-gray-100">
-              <h3 className="text-xl font-black mb-4 text-gray-700">👥 오늘은 어떻게 됐을까?</h3>
-              <div className="grid grid-cols-3 gap-3">
-                {/* 선생님 */}
-                <div className={`flex flex-col items-center p-4 rounded-2xl border-2 ${resultType !== 'FAILED_MISSION' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                  <span className="text-4xl mb-1">👨‍🏫</span>
-                  <span className="font-bold text-sm mb-2">선생님</span>
-                  {resultType !== 'FAILED_MISSION'
-                    ? <ProductImage item={ITEMS[0]} className="w-12 h-12" />
-                    : <span className="text-2xl">—</span>}
-                  <span className={`text-xs font-black mt-1 ${resultType !== 'FAILED_MISSION' ? 'text-green-600' : 'text-red-500'}`}>
-                    {resultType !== 'FAILED_MISSION' ? '맛있게 드심' : '없어요 😥'}
-                  </span>
-                </div>
-
-                {/* 친구 */}
-                <div className={`flex flex-col items-center p-4 rounded-2xl border-2 ${resultType !== 'FAILED_MISSION' ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
-                  <span className="text-4xl mb-1">🧑</span>
-                  <span className="font-bold text-sm mb-2">친구</span>
-                  {resultType !== 'FAILED_MISSION'
-                    ? <ProductImage item={ITEMS[0]} className="w-12 h-12" />
-                    : <span className="text-2xl">—</span>}
-                  <span className={`text-xs font-black mt-1 ${resultType !== 'FAILED_MISSION' ? 'text-green-600' : 'text-red-500'}`}>
-                    {resultType !== 'FAILED_MISSION' ? '맛있게 먹음' : '없어요 😥'}
-                  </span>
-                </div>
-
-                {/* 나 */}
-                {(() => {
-                  const personalItem = myItems.find(i => i.category === 'personal');
-                  const hasDrink = resultType !== 'FAILED_MISSION';
-                  return (
-                    <div className={`flex flex-col items-center p-4 rounded-2xl border-2 ${
-                      personalItem ? 'bg-orange-50 border-orange-200' :
-                      hasDrink ? 'bg-green-50 border-green-200' :
-                      'bg-red-50 border-red-200'
-                    }`}>
-                      <span className="text-4xl mb-1">😊</span>
-                      <span className="font-bold text-sm mb-2">나</span>
-                      <div className="flex gap-1 items-center">
-                        {hasDrink && <ProductImage item={ITEMS[0]} className="w-8 h-8" />}
-                        {personalItem && <ProductImage item={personalItem} className="w-8 h-8" />}
-                        {!hasDrink && <span className="text-2xl">—</span>}
-                      </div>
-                      <span className={`text-xs font-black mt-1 text-center ${
-                        personalItem ? 'text-orange-600' :
-                        hasDrink ? 'text-green-600' :
-                        'text-red-500'
-                      }`}>
-                        {!hasDrink ? '없어요 😥' : personalItem ? '같이 맛있게 먹었어요' : '맛있게 먹음'}
-                      </span>
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
-            </div> {/* end two-column wrapper */}
-
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={resetGame}
-              className="bg-gray-900 text-white px-12 py-6 rounded-full text-2xl font-black flex items-center gap-4 group"
+          return (
+            <motion.div
+              key="result"
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className={`min-h-screen ${config.bg} flex flex-col items-center justify-center p-6 gap-6`}
             >
-              <RefreshCw className="group-hover:rotate-180 transition-transform duration-500" /> 다시 해볼래요
-            </motion.button>
-          </motion.div>
-        )}
+              <div className="flex items-center gap-2 bg-white/80 border-2 border-amber-200 px-4 py-2 rounded-full">
+                <span className="text-xl">🏫</span>
+                <span className="font-black text-amber-700">교실</span>
+              </div>
+
+              {/* 씬 카드 */}
+              <div className={`w-full max-w-[480px] bg-gradient-to-b ${config.sceneBg} rounded-[2.5rem] p-8`}>
+                <div className="flex justify-around items-end">
+                  {characters.map((char, i) => (
+                    <div key={i} className="flex flex-col items-center gap-2">
+                      <span className="text-6xl">{char.emoji}</span>
+                      <span className="text-sm font-bold text-gray-600">{char.name}</span>
+                      <div className="flex flex-col items-center gap-1 min-h-[64px] justify-center">
+                        {char.hasDrink
+                          ? <ProductImage item={ITEMS[0]} className="w-12 h-12" />
+                          : <span className="text-4xl">😢</span>
+                        }
+                        {char.snack && (
+                          <ProductImage item={char.snack} className="w-10 h-10" />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* 서술 카드 */}
+              <div className="w-full max-w-[480px] bg-white rounded-3xl p-8 shadow-md text-center">
+                <h1 className={`text-3xl font-black mb-3 ${config.titleColor}`}>{config.title}</h1>
+                <p className="text-lg font-bold text-gray-600 leading-relaxed">{config.desc}</p>
+              </div>
+
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={resetGame}
+                className="bg-gray-900 text-white px-12 py-6 rounded-full text-2xl font-black flex items-center gap-4 group"
+              >
+                <RefreshCw className="group-hover:rotate-180 transition-transform duration-500" /> 다시 해볼래요
+              </motion.button>
+            </motion.div>
+          );
+        })()}
 
       </AnimatePresence>
 
