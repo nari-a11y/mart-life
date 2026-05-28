@@ -260,38 +260,102 @@ export default function App() {
         
         {/* --- SCREEN 1: INTRO --- */}
         {screen === 'INTRO' && (
-          <motion.div 
+          <motion.div
             key="intro"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="p-6 max-w-[1024px] mx-auto flex flex-col items-center justify-center min-h-screen text-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="min-h-screen flex flex-col items-center"
+            style={{ backgroundColor: '#FEF5EC' }}
           >
-            <div className="flex items-center gap-2 bg-white/80 border-2 border-amber-200 px-4 py-2 rounded-full mb-6">
-              <span className="text-xl">🏫</span>
-              <span className="font-black text-amber-700">교실</span>
-            </div>
-            <div className="bg-white p-8 rounded-[3rem] shadow-xl border-8 border-white relative mb-8">
-              <div className="absolute -top-12 left-1/2 -translate-x-1/2 text-6xl">👨‍🏫</div>
-              <div className="mt-4 space-y-4">
-                <p className="text-2xl font-bold leading-relaxed">
-                  "안녕! 선생님이랑 친구랑 같이 마실<br/>
-                  <span className="text-orange-500">음료수 3개</span>만<br/>
-                  사다줄 수 있을까?"
-                </p>
-                <div className="bg-yellow-100 p-4 rounded-2xl border-2 border-yellow-300">
-                  <p className="text-lg font-bold text-yellow-800">예산: 10,000원</p>
-                </div>
-              </div>
-            </div>
+            <div className="w-full max-w-[1024px] flex flex-col flex-1">
 
-            <motion.button
-              whileTap={{ scale: 0.9 }}
-              onClick={() => setScreen('MISSION_SHOPPING')}
-              className="group bg-orange-400 hover:bg-orange-500 text-white px-12 py-6 rounded-full text-3xl font-black shadow-lg shadow-orange-200 flex items-center gap-4"
-            >
-              출발! <ArrowRight className="w-8 h-8 group-hover:translate-x-2 transition-transform" />
-            </motion.button>
+              {/* 상단 내비 */}
+              <div className="flex items-center justify-between px-8 py-4">
+                <button className="text-gray-500 font-bold text-base">← 나가기</button>
+                <span className="font-black text-gray-800 text-lg">심부름 하기</span>
+                <span className="bg-gray-800 text-white font-black text-sm px-3 py-1.5 rounded-full">1/6</span>
+              </div>
+
+              {/* 프로그레스 바 */}
+              <div className="h-1.5 bg-orange-100">
+                <div className="h-full bg-orange-400 rounded-r-full" style={{ width: '16.67%' }} />
+              </div>
+
+              {/* STEP 배지 */}
+              <div className="px-8 pt-5 pb-3 flex items-center gap-2">
+                <span className="bg-gray-800 text-white text-sm font-black px-3 py-1.5 rounded-full">STEP 1</span>
+                <span className="font-black text-gray-800 text-lg">정보</span>
+                <span className="bg-blue-100 text-blue-500 text-xs font-bold px-2.5 py-1 rounded-full">정보</span>
+              </div>
+
+              {/* 메인 콘텐츠 */}
+              <div className="flex-1 px-8 pb-4 flex flex-row gap-8" style={{ minHeight: 0 }}>
+
+                {/* 왼쪽: 캐릭터 + 말풍선 */}
+                <div className="flex-1 flex flex-col items-center justify-center gap-4">
+                  <div className="relative bg-white rounded-2xl px-6 py-4 shadow-sm self-end mr-4 max-w-[260px]">
+                    <p className="text-lg font-bold text-gray-800 leading-relaxed">
+                      부탁이 있어!<br/>
+                      반 친구랑 같이 먹을<br/>
+                      간식을 사올 수 있을까?
+                    </p>
+                    <div className="absolute -bottom-3 left-8 w-0 h-0
+                      border-l-[10px] border-r-[10px] border-t-[12px]
+                      border-l-transparent border-r-transparent border-t-white" />
+                  </div>
+                  <img
+                    src="/images/teacher.png"
+                    alt="선생님"
+                    className="h-80 w-auto object-contain"
+                  />
+                </div>
+
+                {/* 오른쪽: 정보 카드 */}
+                <div className="flex-1 flex items-center">
+                  <div className="bg-white rounded-2xl p-6 shadow-sm w-full">
+                    <div className="flex items-center justify-between py-5 border-b border-dashed border-gray-200">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">💰</span>
+                        <span className="text-xl font-bold text-gray-700">가진 돈</span>
+                      </div>
+                      <span className="text-2xl font-black text-gray-800">10,000원</span>
+                    </div>
+                    <div className="flex items-center justify-between py-5">
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">🛒</span>
+                        <span className="text-xl font-bold text-gray-700">선생님 부탁</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <img
+                          src="/images/products/시원한 음료수.png"
+                          alt="음료수"
+                          className="w-10 h-10 object-cover rounded-lg"
+                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                        />
+                        <span className="text-xl font-black text-gray-800">음료수 3개</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* 하단 버튼 */}
+              <div className="flex bg-white">
+                <button className="flex-1 py-5 text-gray-300 font-black text-lg flex items-center justify-center cursor-default border-r border-gray-100">
+                  ← 이전
+                </button>
+                <motion.button
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => setScreen('MISSION_SHOPPING')}
+                  className="flex-1 py-5 bg-orange-400 text-white font-black text-lg flex items-center justify-center"
+                >
+                  다음 →
+                </motion.button>
+              </div>
+
+            </div>
           </motion.div>
         )}
 
@@ -303,7 +367,7 @@ export default function App() {
             animate={{ opacity: 1 }}
             className="flex flex-col"
           >
-            <BudgetBar step={{ num: '1 / 2단계', label: '선생님 부탁', icon: '🛒' }} />
+            <BudgetBar step={{ num: '1 / 2단계', label: '심부름 하기', icon: '🛒' }} />
 
             <div className="p-4 max-w-[1024px] mx-auto w-full">
               <BackButton onClick={() => { setCart([]); setMyItems([]); setScreen('INTRO'); }} />
@@ -752,28 +816,28 @@ export default function App() {
             title: personalItem?.shareType === 'alone' ? '조금 아쉬웠어요' : '너무 즐거웠어요! 🎉',
             titleColor: personalItem?.shareType === 'alone' ? 'text-amber-600' : 'text-orange-500',
             desc: personalItem?.id === 'my3'
-              ? '음료수와 팝콘을 함께 같이 먹을 수 있어서 선생님과 친구가 좋아했어요!'
+              ? '음료수와 팝콘을 함께 먹었어요.\n선생님과 친구가 좋아했어요!\n나도 기분이 좋았어요.'
               : personalItem?.id === 'my2'
-              ? '음료수는 맞게 나눠 먹었지만 초코바는 나 혼자 먹어서 친구가 서운해했어요.'
+              ? '음료수는 사이좋게 나눴어요.\n근데 초코바는 나 혼자 먹었어요.\n친구가 서운해했어요.'
               : personalItem?.id === 'my4'
-              ? '음료수는 맞게 나눠 먹었지만 젤리는 나 혼자 먹어서 친구가 서운해했어요.'
-              : `선생님이 부탁한 음료수도 1캔씩 마시고, ${personalItem?.name ?? '간식'}도 나눠먹어서 너무 즐거웠어요!`,
+              ? '음료수는 사이좋게 나눴어요.\n근데 젤리는 나 혼자 먹었어요.\n친구가 서운해했어요.'
+              : `음료수와 ${personalItem?.name ?? '간식'}을 함께 먹었어요.\n선생님과 친구가 좋아했어요!`,
           } : resultType === 'MISSION_COMPLETE' ? {
             bg: 'bg-amber-50',
             sceneBg: 'from-amber-100 to-yellow-100',
             title: '조금 아쉬웠어요',
             titleColor: 'text-amber-600',
-            desc: '음료수를 1캔씩 나눠 마셨지만, 간식이 없어서 조금 아쉬웠어요.',
+            desc: '음료수는 1캔씩 나눠 마셨어요.\n간식이 없어서 조금 아쉬웠어요.',
           } : {
             bg: 'bg-sky-50',
             sceneBg: 'from-sky-100 to-blue-100',
-            title: '속상했어요 ㅠㅠ',
-            titleColor: 'text-blue-600',
-            desc: drinkCount === 2
-              ? '선생님이 음료수를 마시지 못해서 속상해했어요 ㅠㅠ'
-              : drinkCount <= 1
-              ? '선생님과 친구가 음료수를 마시지 못해서 속상해했어요 ㅠㅠ'
-              : '아무도 음료수를 마시지 못해서 많이 속상했어요 ㅠㅠ',
+            title: personalItem && drinkCount === 2 ? '조금 아쉬웠어요' : '속상했어요 ㅠㅠ',
+            titleColor: personalItem && drinkCount === 2 ? 'text-amber-600' : 'text-blue-600',
+            desc: personalItem && drinkCount === 2
+              ? `${personalItem.name}을 함께 먹었어요!\n근데 음료수는 2캔밖에 없었어요.\n선생님이 못 드셔서 아쉬웠어요.`
+              : drinkCount === 2
+              ? '음료수가 2개뿐이었어요.\n선생님이 못 마셨어요.\n선생님이 속상해했어요.'
+              : '음료수가 부족했어요.\n친구랑 선생님이 못 마셨어요.',
           };
 
           const characters = [
@@ -819,7 +883,7 @@ export default function App() {
               {/* 서술 카드 */}
               <div className="w-full max-w-[480px] bg-white rounded-3xl p-8 shadow-md text-center">
                 <h1 className={`text-3xl font-black mb-3 ${config.titleColor}`}>{config.title}</h1>
-                <p className="text-lg font-bold text-gray-600 leading-relaxed">{config.desc}</p>
+                <p className="text-lg font-bold text-gray-600 leading-relaxed whitespace-pre-line break-keep">{config.desc}</p>
               </div>
 
               <motion.button
